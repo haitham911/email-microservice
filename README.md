@@ -1,5 +1,9 @@
-# github.com/email-microservice
-
+# Message-Based Systems email-microservice
+ Advantages of Message-Based Systems are:
+The sender only needs to know the location of the message broker, not the addresses of all possible    receivers.
+It’s possible to have multiple receivers for a message.
+We can easily add new receivers without any changes in the sender.
+Messages can be queued, ensuring delivery after a receiver has been down.
 ### Go, RabbitMQ and gRPC [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) microservice
 
 #### Full list what has been used
