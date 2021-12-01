@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 )
 
 type Metrics interface {
@@ -44,7 +45,7 @@ func CreateMetrics(address string, name string) (Metrics, error) {
 	if err := prometheus.Register(metr.Times); err != nil {
 		return nil, errors.Wrap(err, "prometheus.Register")
 	}
-	if err := prometheus.Register(prometheus.NewBuildInfoCollector()); err != nil {
+	if err := prometheus.Register(collectors.NewBuildInfoCollector()); err != nil {
 		return nil, errors.Wrap(err, "prometheus.Register")
 	}
 
