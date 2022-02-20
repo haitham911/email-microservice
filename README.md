@@ -4,12 +4,12 @@ The sender only needs to know the location of the message broker, not the addres
 It’s possible to have multiple receivers for a message.
 We can easily add new receivers without any changes in the sender.
 Messages can be queued, ensuring delivery after a receiver has been down.
-### Go, RabbitMQ and gRPC [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) microservice
+### Go,  gRPC [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) microservice, gRPC Getway 
 
 #### Full list what has been used
 
 * [GRPC](https://grpc.io/) - gRPC
-* [RabbitMQ](https://github.com/streadway/amqp) - RabbitMQ
+* [GRPC Getway](https://grpc-ecosystem.github.io/grpc-gateway)  - GRPC Getway
 * [sqlx](https://github.com/jmoiron/sqlx) - Extensions to database/sql.
 * [pgx](https://github.com/jackc/pgx) - PostgreSQL driver and toolkit for Go
 * [viper](https://github.com/spf13/viper) - Go configuration with fangs
@@ -37,7 +37,7 @@ Messages can be queued, ensuring delivery after a receiver has been down.
 
 #### 🙌👨‍💻🚀 Docker-compose files
 
-    docker-compose.local.yml - run rabbitmq, postgresql, jaeger, prometheus, grafana containers
+    docker-compose.local.yml - run  postgresql, jaeger, prometheus, grafana containers
     docker-compose.yml - run all in docker
 
 ### Docker development usage
@@ -61,9 +61,6 @@ Messages can be queued, ensuring delivery after a receiver has been down.
 
 <http://localhost:3000>
 
-### RabbitMQ UI
-
-<http://localhost:15672>
 
 
 protoc \
