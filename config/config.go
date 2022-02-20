@@ -11,7 +11,6 @@ import (
 // App config struct
 type Config struct {
 	Server   ServerConfig
-	RabbitMQ RabbitMQ
 	Postgres PostgresConfig
 	Redis    RedisConfig
 	Cookie   Cookie
@@ -49,19 +48,6 @@ type Smtp struct {
 	Port     int
 	User     string
 	Password string
-}
-
-// RabbitMQ
-type RabbitMQ struct {
-	Host           string
-	Port           string
-	User           string
-	Password       string
-	Exchange       string
-	Queue          string
-	RoutingKey     string
-	ConsumerTag    string
-	WorkerPoolSize int
 }
 
 // Logger config

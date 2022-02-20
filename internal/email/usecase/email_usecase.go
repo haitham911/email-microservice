@@ -22,12 +22,11 @@ type EmailUseCase struct {
 	emailsRepo email.EmailsRepository
 	logger     logger.Logger
 	cfg        *config.Config
-	publisher  email.EmailsPublisher
 }
 
 // NewEmailUseCase Image useCase constructor
-func NewEmailUseCase(emailsRepo email.EmailsRepository, logger logger.Logger, mailer email.Mailer, cfg *config.Config, publisher email.EmailsPublisher) *EmailUseCase {
-	return &EmailUseCase{emailsRepo: emailsRepo, logger: logger, mailer: mailer, cfg: cfg, publisher: publisher}
+func NewEmailUseCase(emailsRepo email.EmailsRepository, logger logger.Logger, mailer email.Mailer, cfg *config.Config) *EmailUseCase {
+	return &EmailUseCase{emailsRepo: emailsRepo, logger: logger, mailer: mailer, cfg: cfg}
 }
 
 // SendEmail Send email
@@ -59,19 +58,6 @@ func (e *EmailUseCase) SendEmail(ctx context.Context, deliveryBody []byte) error
 	span.LogFields(log.String("emailID", createdEmail.EmailID.String()))
 	e.logger.Infof("Success send email: %v", createdEmail.EmailID)
 	return nil
-}
-
-// PublishEmailToQueue Publish email to rabbitmq
-func (e *EmailUseCase) PublishEmailToQueue(ctx context.Context, email *models.Email) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "EmailUseCase.PublishEmailToQueue")
-	defer span.Finish()
-
-	mailBytes, err := json.Marshal(email)
-	if err != nil {
-		return errors.Wrap(err, "json.Marshal")
-	}
-
-	return e.publisher.Publish(mailBytes, email.ContentType)
 }
 
 // FindEmailById Find email by uuid

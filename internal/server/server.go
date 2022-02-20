@@ -14,7 +14,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
@@ -22,7 +21,6 @@ import (
 
 	"github.com/email-microservice/config"
 	mailGrpc "github.com/email-microservice/internal/email/delivery/grpc"
-	"github.com/email-microservice/internal/email/delivery/rabbitmq"
 	"github.com/email-microservice/internal/email/mailer"
 	emailService "github.com/email-microservice/internal/email/proto"
 	"github.com/email-microservice/internal/email/repository"
@@ -36,14 +34,13 @@ import (
 type Server struct {
 	db         *sqlx.DB
 	mailDialer *gomail.Dialer
-	amqpConn   *amqp.Connection
 	logger     logger.Logger
 	cfg        *config.Config
 }
 
 // Server constructor
-func NewEmailsServer(amqpConn *amqp.Connection, logger logger.Logger, cfg *config.Config, mailDialer *gomail.Dialer, db *sqlx.DB) *Server {
-	return &Server{amqpConn: amqpConn, logger: logger, cfg: cfg, mailDialer: mailDialer, db: db}
+func NewEmailsServer(logger logger.Logger, cfg *config.Config, mailDialer *gomail.Dialer, db *sqlx.DB) *Server {
+	return &Server{logger: logger, cfg: cfg, mailDialer: mailDialer, db: db}
 }
 
 // Run server
@@ -58,19 +55,13 @@ func (s *Server) Run() error {
 		s.cfg.Metrics.ServiceName,
 	)
 
-	emailsPublisher, err := rabbitmq.NewEmailsPublisher(s.cfg, s.logger)
-	if err != nil {
-		return err
-	}
-	defer emailsPublisher.CloseChan()
 	s.logger.Info("Emails Publisher initialized")
 
 	im := interceptors.NewInterceptorManager(s.logger, s.cfg, metric)
 
 	emailRepository := repository.NewEmailsRepository(s.db)
 	mailDialer := mailer.NewMailer(s.mailDialer)
-	emailUseCase := usecase.NewEmailUseCase(emailRepository, s.logger, mailDialer, s.cfg, emailsPublisher)
-	emailsAmqpConsumer := rabbitmq.NewImagesConsumer(s.amqpConn, s.logger, emailUseCase)
+	emailUseCase := usecase.NewEmailUseCase(emailRepository, s.logger, mailDialer, s.cfg)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -80,20 +71,6 @@ func (s *Server) Run() error {
 	go func() {
 		if err := router.Start(s.cfg.Metrics.URL); err != nil {
 			s.logger.Errorf("router.Start metrics: %v", err)
-			cancel()
-		}
-	}()
-
-	go func() {
-		err := emailsAmqpConsumer.StartConsumer(
-			s.cfg.RabbitMQ.WorkerPoolSize,
-			s.cfg.RabbitMQ.Exchange,
-			s.cfg.RabbitMQ.Queue,
-			s.cfg.RabbitMQ.RoutingKey,
-			s.cfg.RabbitMQ.ConsumerTag,
-		)
-		if err != nil {
-			s.logger.Errorf("StartConsumer: %v", err)
 			cancel()
 		}
 	}()

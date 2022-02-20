@@ -1,8 +1,7 @@
-// protoc --go_out=plugins=grpc:. *.proto
-
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
 package emailService;
 option go_package = ".;emailService";
@@ -51,7 +50,17 @@ message FindEmailsByReceiverResponse {
 }
 
 service EmailService{
-  rpc SendEmails(SendEmailRequest) returns (SendEmailResponse);
-  rpc FindEmailById(FindEmailByIdRequest) returns (FindEmailByIdResponse);
+  rpc SendEmails(SendEmailRequest) returns (SendEmailResponse){
+    option (google.api.http) = {
+      post: "/email/send"
+      body: "*"
+    };
+  };
+  rpc FindEmailById(FindEmailByIdRequest) returns (FindEmailByIdResponse){
+    option (google.api.http) = {
+      post: "/email/find"
+      body: "*"
+    };
+  };
   rpc FindEmailsByReceiver(FindEmailsByReceiverRequest) returns (FindEmailsByReceiverResponse);
 }

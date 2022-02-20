@@ -64,3 +64,13 @@ Messages can be queued, ensuring delivery after a receiver has been down.
 ### RabbitMQ UI
 
 <http://localhost:15672>
+
+
+protoc \
+-I=/usr/local/include \
+-I=./proto \
+-I=${GOPATH}/src \
+-I=${GOPATH}/src/grpc-gateway/third_party/googleapis \
+--go_out=plugins=grpc:./proto \
+--grpc-gateway_out=logtostderr=true:./proto \
+./proto/*.proto

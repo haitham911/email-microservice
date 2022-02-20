@@ -3,6 +3,8 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"testing"
+
 	"github.com/email-microservice/config"
 	"github.com/email-microservice/internal/email/mock"
 	"github.com/email-microservice/internal/models"
@@ -12,7 +14,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestEmailUseCase_SendEmail(t *testing.T) {
@@ -31,11 +32,10 @@ func TestEmailUseCase_SendEmail(t *testing.T) {
 	appLogger := logger.NewApiLogger(cfg)
 	appLogger.InitLogger()
 
-	emailsPublisher := mock.NewMockEmailsPublisher(ctrl)
 	emailsRepository := mock.NewMockEmailsRepository(ctrl)
 	mailer := mock.NewMockMailer(ctrl)
 
-	emailUC := NewEmailUseCase(emailsRepository, appLogger, mailer, cfg, emailsPublisher)
+	emailUC := NewEmailUseCase(emailsRepository, appLogger, mailer, cfg)
 
 	deliveryBody := []byte(`{"to": ["alex@gmail.com"], "from": "mailservice@mail.ru",
   "subject": "registration confirmation", "body": "registration confirmation body",
@@ -66,87 +66,6 @@ func TestEmailUseCase_SendEmail(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestEmailUseCase_PublishEmailToQueue(t *testing.T) {
-	t.Parallel()
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	cfg := &config.Config{
-		Logger: config.Logger{},
-		Smtp: config.Smtp{
-			User: "mailservice@mail.ru",
-		},
-	}
-
-	appLogger := logger.NewApiLogger(cfg)
-	appLogger.InitLogger()
-
-	emailsPublisher := mock.NewMockEmailsPublisher(ctrl)
-	emailsRepository := mock.NewMockEmailsRepository(ctrl)
-	mailer := mock.NewMockMailer(ctrl)
-
-	emailUC := NewEmailUseCase(emailsRepository, appLogger, mailer, cfg, emailsPublisher)
-
-	//emailUUID := uuid.New()
-	mockEmail := &models.Email{
-		To:          []string{"mail@gmail.com"},
-		From:        "alex@gmail.com",
-		Body:        "<span>some text content</span>",
-		Subject:     "Confirm your email",
-		ContentType: mime_types.MIMEApplicationJSON,
-	}
-
-	mailBytes, err := json.Marshal(mockEmail)
-	require.NoError(t, err)
-
-	emailsPublisher.EXPECT().Publish(mailBytes, mockEmail.ContentType).Return(nil)
-
-	err = emailUC.PublishEmailToQueue(context.Background(), mockEmail)
-	require.NoError(t, err)
-}
-
-func TestEmailUseCase_FindEmailById(t *testing.T) {
-	t.Parallel()
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	cfg := &config.Config{
-		Logger: config.Logger{},
-		Smtp: config.Smtp{
-			User: "mailservice@mail.ru",
-		},
-	}
-
-	appLogger := logger.NewApiLogger(cfg)
-	appLogger.InitLogger()
-
-	emailsPublisher := mock.NewMockEmailsPublisher(ctrl)
-	emailsRepository := mock.NewMockEmailsRepository(ctrl)
-	mailer := mock.NewMockMailer(ctrl)
-
-	emailUC := NewEmailUseCase(emailsRepository, appLogger, mailer, cfg, emailsPublisher)
-
-	emailUUID := uuid.New()
-	mockEmail := &models.Email{
-		EmailID:     emailUUID,
-		To:          []string{"mail@gmail.com"},
-		From:        "alex@gmail.com",
-		Body:        "<span>some text content</span>",
-		Subject:     "Confirm your email",
-		ContentType: mime_types.MIMEApplicationJSON,
-	}
-
-	ctx := context.Background()
-	emailsRepository.EXPECT().FindEmailById(gomock.Any(), emailUUID).Return(mockEmail, nil)
-
-	emailById, err := emailUC.FindEmailById(ctx, emailUUID)
-	require.NoError(t, err)
-	require.NotNil(t, emailById)
-	require.Equal(t, emailUUID, emailById.EmailID)
-}
-
 func TestEmailUseCase_FindEmailsByReceiver(t *testing.T) {
 	t.Parallel()
 
@@ -163,11 +82,10 @@ func TestEmailUseCase_FindEmailsByReceiver(t *testing.T) {
 	appLogger := logger.NewApiLogger(cfg)
 	appLogger.InitLogger()
 
-	emailsPublisher := mock.NewMockEmailsPublisher(ctrl)
 	emailsRepository := mock.NewMockEmailsRepository(ctrl)
 	mailer := mock.NewMockMailer(ctrl)
 
-	emailUC := NewEmailUseCase(emailsRepository, appLogger, mailer, cfg, emailsPublisher)
+	emailUC := NewEmailUseCase(emailsRepository, appLogger, mailer, cfg)
 
 	emailUUID := uuid.New()
 	mockEmail := &models.Email{
