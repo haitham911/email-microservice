@@ -1,4 +1,4 @@
-# Message-Based Systems email-microservice
+# Message-Based Systems email-microservice and generates a reverse-proxy server which translates a RESTful JSON
  Advantages of Message-Based Systems are:
 The sender only needs to know the location of the message broker, not the addresses of all possible    receivers.
 It’s possible to have multiple receivers for a message.
